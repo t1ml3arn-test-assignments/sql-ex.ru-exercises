@@ -160,5 +160,98 @@ from Laptop
 group by model
 ;
 
+-- 12
+/*  Добавьте один дюйм к размеру экрана каждого блокнота,
+выпущенного производителями E и B, и уменьшите его цену на $100. */
+update Laptop
+set screen=screen+1,
+    price=price-100
+where model in (
+  select model from product
+  where (maker='E' OR maker='B')
+        and type='Laptop'
+)
+;
+
+-- 13
+/*  Ввести в базу данных информацию о том, 
+    что корабль Rodney был потоплен в битве, произошедшей 25/10/1944, 
+    а корабль Nelson поврежден - 28/01/1945.
+    Замечание: считать, что дата битвы уникальна в таблице Battles. */
+insert into Outcomes
+select
+  'Rodney' as ship
+  , (select distinct name from Battles
+     where date='1944-10-25'
+  ) as battle
+  , 'sunk' as result
+union
+select
+  'Nelson'
+  , (select distinct name from Battles
+     where date='1945-01-28'
+  )
+  , 'damaged'
+;
+
+-- 14
+/*  Удалите классы, имеющие в базе данных менее трех кораблей 
+    (учесть корабли из Outcomes). */
+delete from Classes
+where class in (
+  select
+    c.class
+  from (
+    select name, class from Ships
+    union
+    select ship, ship from Outcomes
+  ) as sh
+  right join Classes c on c.class=sh.class
+  group by c.class
+  having count(sh.name)<3
+);
+
+-- 15
+/*  Из каждой группы ПК с одинаковым номером модели в таблице PC 
+    удалить все строки кроме строки 
+    с наибольшим для этой группы кодом (столбец code).*/
+delete from pc
+where code not in (
+  select
+    max(code)
+  from PC
+  group by model
+)
+;
+
+-- 16
+/*  Удалить из таблицы Product те модели, 
+    которые отсутствуют в других таблицах. */
+delete from Product
+where model not in (
+  select model from pc
+  union
+  select model from laptop
+  union
+  select model from printer
+)
+;
+
+-- 17
+/*  Удалить из таблицы PC компьютеры, 
+    у которых величина hd попадает в тройку наименьших значений. */
+delete from pc
+where hd in (
+  select top 3 * from (select distinct hd from pc) as p 
+  order by hd asc
+);
+
+-- 18
+/*  Перенести все концевые пробелы, 
+    имеющиеся в названии каждого сражения в таблице Battles, 
+    в начало названия. */
+update Battles
+set name=replace(name, rtrim(name), '')+rtrim(name);
+
 -- №
 /*  */
