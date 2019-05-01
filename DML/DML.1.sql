@@ -289,5 +289,20 @@ select
         and result='damaged' and nextbattle is not null
 ;
 
--- №
-/*  */
+-- 20
+/*  Заменить любое количество повторяющихся пробелов 
+    в названиях кораблей из таблицы Ships на один пробел. */
+-- Идея нагло взята из интернетов
+-- 1. Из строки типа 'AA   BB' сделать 'AA<><><>BB'
+-- 2. Из строки 'AA<><><>BB' сделать 'AA<>BB'
+-- 3. <> заменить на пробел
+update Ships
+set name = 
+replace(
+  replace(
+    replace(name, ' ', CHAR(17)+CHAR(18))
+    , CHAR(18)+CHAR(17), ''
+  )
+  , CHAR(17)+CHAR(18), ' '
+)
+where name LIKE '% %';
