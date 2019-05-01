@@ -281,6 +281,7 @@ ob as (
     , result
     from Outcomes o JOIN exb on o.battle=exb.name
 )
+insert into Outcomes
 select
   ship, nextbattle as battle, 'sunk' as result 
   from ob
