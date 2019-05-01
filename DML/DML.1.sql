@@ -253,5 +253,40 @@ where hd in (
 update Battles
 set name=replace(name, rtrim(name), '')+rtrim(name);
 
+-- 19
+/*  Потопить в следующем сражении суда, 
+    которые в первой своей битве были повреждены 
+    и больше не участвовали ни в каких сражениях. 
+    Если следующего сражения для такого судна не существует в базе данных, 
+    не вносить его в таблицу Outcomes. 
+    Замечание: в базе данных нет двух сражений, 
+    которые состоялись бы в один день. */
+with exb as (
+  -- getting battles and NEXT battles
+  -- in one table
+  select 
+    name
+    , lead(name) over(order by date asc) as nextbattle
+    , date
+    from Battles
+),
+ob as (
+  -- Outcomes-Battles table
+  select
+    ship
+    , battle
+    , nextbattle
+    , count(*) over(partition by ship) as numbattles
+    , date
+    , result
+    from Outcomes o JOIN exb on o.battle=exb.name
+)
+select
+  ship, nextbattle as battle, 'sunk' as result 
+  from ob
+  where numbattles=1
+        and result='damaged' and nextbattle is not null
+;
+
 -- №
 /*  */
