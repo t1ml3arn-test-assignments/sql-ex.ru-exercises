@@ -10,3 +10,10 @@ create table Outcomes (
     , result char(10) not null
     , primary key (ship, battle)
 );
+
+create table Ships (
+    name varchar(50) not null
+    , class varchar(50) not null
+    , launched integer default null
+    , primary key (name, class)
+);
