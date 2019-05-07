@@ -17,5 +17,3 @@ values
 ,('D', 'B5','damaged')
 ,('E', 'B4','ok')
 ;
---
-
