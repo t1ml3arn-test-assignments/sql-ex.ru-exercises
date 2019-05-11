@@ -131,4 +131,19 @@ select
 from q
 where rownum <= (select max(rownum)-5 from q)
 ;
+
+-- costs a little bit less
+with tmp as (
+  select
+    code
+    , price
+    , row_number() over(order by code ASC) as rownum
+  from pc
+)
+select
+  code
+  , (select avg(price) from tmp where rownum between a.rownum and a.rownum+5
+  ) as avg
+from tmp a
+where rownum <= (select max(rownum)-5 from q)
 ```
