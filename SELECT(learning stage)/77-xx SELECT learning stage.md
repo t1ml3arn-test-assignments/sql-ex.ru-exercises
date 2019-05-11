@@ -89,3 +89,46 @@ except
 select maker from product
   where type='pc' and model not in (select model from pc);
 ```
+
+## 81
+
+Из таблицы `Outcome` получить все записи за тот месяц (месяцы), с учетом года, в котором суммарное значение расхода (out) было максимальным.
+
+- Из даты получить дату в виде год-месяц
+
+```sql
+with q as(
+  select
+    *
+    , sum(out) over(
+        partition by year(date), month(date)
+    ) as month_out
+  from Outcome o
+)
+select code, point, date, out from q
+where month_out=(select max(month_out) from q)
+;
+```
+
+## 83
+
+В наборе записей из таблицы `PC`, отсортированном по столбцу code (по возрастанию) найти среднее значение цены для каждой шестерки подряд идущих ПК.
+Вывод: значение code, которое является первым в наборе из шести строк, среднее значение цены в наборе
+
+```sql
+with q as (
+  select
+    code
+    , avg(price) over(
+        order by code DESC
+        rows between 5 preceding and current row
+    ) as avg_price
+    , row_number() over(order by code ASC) as rownum
+  from pc
+)
+select
+  code, avg_price
+from q
+where rownum <= (select max(rownum)-5 from q)
+;
+```
