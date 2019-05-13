@@ -172,3 +172,53 @@ with q as (
 )
 select name from q where (a+b+c+d+e+f+g)>=4
 ```
+
+## 84
+
+Для каждой компании подсчитать количество перевезенных пассажиров (если они были в этом месяце) по декадам апреля 2003. При этом учитывать только дату вылета.
+Вывод: название компании, количество пассажиров за каждую декаду
+
+```sql
+-- первый монстр
+-- cost	0.15383219718933
+-- operations	51
+with q as (
+  select
+    t.id_comp
+    , case
+        when day(date) < 11 then 1
+        when day(date) < 21 then 2
+        when day(date) < 32 then 3
+    end as decade
+    , count(pt.id_psg) as psg_count
+  from pass_in_trip pt
+    join trip t on t.trip_no=pt.trip_no
+  where year(date)=2003 and month(date)=4
+  group by t.id_comp,
+    case
+      when day(date) < 11 then 1
+      when day(date) < 21 then 2
+      when day(date) < 32 then 3
+    end
+)
+select
+  distinct
+  name
+  , coalesce((select top 1 psg_count from q where decade=1 and q.id_comp=c.id_comp), 0) as '1'
+  , coalesce((select top 1 psg_count from q where decade=2 and q.id_comp=c.id_comp), 0) as '2'
+  , coalesce((select top 1 psg_count from q where decade=3 and q.id_comp=c.id_comp), 0) as '3'
+from q join company c on c.id_comp=q.id_comp
+
+-- MORE efficient solution
+select
+  c.name
+  , SUM(iif(day(date)<11, 1, 0)) as d1
+  , SUM(iif(day(date)<21 and day(date)>10, 1, 0)) as d2
+  , SUM(iif(day(date)>20, 1, 0)) as d3
+from pass_in_trip pt
+  join trip t on pt.trip_no=t.trip_no
+  join company c on c.id_comp=t.id_comp
+where year(pt.date)=2003 and month(pt.date)=4
+group by name
+```
+
