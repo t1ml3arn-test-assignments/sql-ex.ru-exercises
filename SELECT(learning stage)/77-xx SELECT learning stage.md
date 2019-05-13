@@ -222,3 +222,25 @@ where year(pt.date)=2003 and month(pt.date)=4
 group by name
 ```
 
+## 85
+
+Найти производителей, которые выпускают только принтеры или только PC.
+При этом искомые производители PC должны выпускать не менее 3 моделей.
+
+```sql
+with opr as (
+  select maker from product where type='printer'
+  except
+  select maker from product where type!='printer'
+),
+opc as (
+  select maker from product where type='pc'
+  group by maker
+  having count(model) >= 3
+  except
+  select maker from product where type!='pc'
+)
+select * from opc
+union
+select * from opr
+```
