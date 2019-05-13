@@ -241,3 +241,29 @@ union (
   select maker from product where type!='pc'
 )
 ```
+
+## 86
+
+Для каждого производителя перечислить в алфавитном порядке с разделителем "/" все типы выпускаемой им продукции.
+Вывод: `maker`, `список` типов продукции
+
+```sql
+with m as (
+  select
+    maker
+    , max(iif(type='laptop', 'Laptop', char(20))) as lt
+    , max(iif(type='pc',  'PC', char(20))) as pc
+    , max(iif(type='printer', 'Printer', char(20))) as pr
+  from product
+  group by maker
+)
+select
+  maker
+  , replace(
+      replace(
+        replace(lt + '/' + pc + '/' + pr, char(20)+'/', ''), '/'+char(20), ''
+    ), char(20), ''
+  )
+  as types
+from m
+```
