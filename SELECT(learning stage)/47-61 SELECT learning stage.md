@@ -36,6 +36,57 @@ select
 |      8  | E      |  1260 |
 |      9  | E      |  1434 |
 
+## 47 (NEW)
+
+Определить страны, которые потеряли в сражениях все свои корабли.
+
+```sql
+with sh as (
+  select c.country, s.name from classes c join ships s on c.class=s.class
+  union
+  select c.country, o.ship from outcomes o join classes c on c.class=o.ship
+),
+shs as(
+  -- number of sunked ships
+  select
+    country
+    , count(*) as total
+  from sh
+    left join outcomes o on sh.name=o.ship
+  where result = 'sunk'
+  group by country
+),
+sht as (
+  -- total number of ships
+  select
+    country
+    , count(*) as total
+  from sh
+  group by country
+)
+select x.country from sht x join shs y on x.country=y.country
+where x.total=y.total
+
+-- another solution
+with sh as (
+  select c.country, s.name from classes c join ships s on c.class=s.class
+  union
+  select c.country, o.ship from outcomes o join classes c on c.class=o.ship
+)
+, a as (
+  select
+    country, name
+    , case
+        when result='sunk' then 1
+        else 0
+      end as sunk
+  from sh left join outcomes o on o.ship=sh.name
+)
+select country from a
+group by country
+having count(distinct name)=sum(sunk)
+```
+
 ## 48
 
 Найдите классы кораблей, в которых хотя бы один корабль был потоплен в сражении.
