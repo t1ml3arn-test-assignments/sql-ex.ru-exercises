@@ -267,3 +267,28 @@ select
   as types
 from m
 ```
+
+## 88
+
+Среди тех, кто пользуется услугами только одной компании, определить имена разных пассажиров, летавших чаще других.
+Вывести: имя пассажира, число полетов и название компании.
+
+```sql
+with psc as (
+  select
+    pit.id_psg
+    , count(pit.trip_no) as trip_count
+    , max(t.id_comp) as id_comp
+  from pass_in_trip pit
+    join trip t on pit.trip_no=t.trip_no
+  group by pit.id_psg
+  having count(distinct t.id_comp) = 1
+)
+select
+  p.name, p1.trip_count, c.name
+from psc p1
+  join company c on p1.id_comp = c.id_comp
+  join passenger p on p1.id_psg = p.id_psg
+where p1.trip_count = (select max(trip_count) from psc)
+
+```
