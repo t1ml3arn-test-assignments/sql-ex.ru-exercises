@@ -442,6 +442,33 @@ unpivot
 | ram     | 128    |
 | speed   | 800    |
 
+## 41 (NEW)
+
+Для каждого производителя, у которого присутствуют модели хотя бы в одной из таблиц `PC`, `Laptop` или `Printer`,
+определить максимальную цену на его продукцию.
+Вывод:
+
+- имя производителя
+- если среди цен на продукцию данного производителя присутствует `NULL`, то выводить для этого производителя `NULL`, иначе максимальную цену.
+
+```sql
+with m as (
+  select model, price, iif(price is null, 1, 0) pn from printer
+  union all
+  select model, price, iif(price is null, 1, 0) pn from pc
+  union all
+  select model, price, iif(price is null, 1, 0) pn from laptop
+)
+select
+  maker
+  , case
+      when sum(pn) > 0 then NULL
+      else max(price)
+  end as max_price
+from product p join m on p.model=m.model
+group by maker
+```
+
 ## 45
 
 Найдите названия всех кораблей в базе данных, состоящие из трех и более слов (например, King George V).
