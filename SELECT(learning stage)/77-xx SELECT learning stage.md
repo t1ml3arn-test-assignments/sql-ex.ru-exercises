@@ -268,6 +268,38 @@ select
 from m
 ```
 
+## 87
+
+Считая, что пункт самого первого вылета пассажира является местом жительства, найти не москвичей, которые прилетали в Москву более одного раза.
+Вывод: имя пассажира, количество полетов в Москву.
+
+```sql
+with t as (
+  -- passangers and their trips
+  select pit.date, id_psg, t.*
+  from pass_in_trip pit
+  join trip t on pit.trip_no=t.trip_no
+)
+, fo as (
+  -- get first fly date+time
+  select id_psg, min(date+time_out) as date_out
+  from t group by id_psg
+)
+, nm as (
+  -- those who are not from Moscow
+  select fo.id_psg
+  from fo join t on fo.date_out=(t.date+t.time_out)
+  where town_from!='Moscow'
+)
+select
+  p.name, count(*)
+from t join passenger p on t.id_psg=p.id_psg
+where town_to='Moscow'
+      and t.id_psg in (select * from nm)
+group by t.id_psg, p.name
+having count(*) > 1
+```
+
 ## 88
 
 Среди тех, кто пользуется услугами только одной компании, определить имена разных пассажиров, летавших чаще других.
@@ -292,3 +324,5 @@ from psc p1
 where p1.trip_count = (select max(trip_count) from psc)
 
 ```
+
+4 exercises left before moving to the next file!
